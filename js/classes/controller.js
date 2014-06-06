@@ -38,10 +38,11 @@ define(['./elevator', './floor', './entity'], function (Elevator, Floor) {
 	// Registers floors to this controller
 	Controller.prototype.registerFloors = function (num_floors, controller) {
 		for (var i = 0; i < num_floors; i++) {
-			this.floors.push(new Floor(i, this));
+			this.floors.push(new Floor({
+				id: i
+			}, this));
 		}
 	};
 
 	return Controller;
-
 });

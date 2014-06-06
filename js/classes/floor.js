@@ -1,7 +1,6 @@
 define(function () {
-
-	var Floor = function (id, controller) {
-		this.id = id;
+	var Floor = function (params, controller) {
+		this.id = params.id;
 		this.controller = controller;
 
 		this.passengers = [];
