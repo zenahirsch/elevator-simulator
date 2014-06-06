@@ -24,13 +24,5 @@ define(['./entity'], function (Entity) {
 	// Elevator that the passenger is currently riding, if any
 	Passenger.prototype.elevator = null;
 
-	// Take the stairs instead, which sets passenger status to -1
-	Passenger.prototype.takeStairs = function () {
-		this.status = -1;
-		this.floor = null;
-		this.elevator = null;
-	};
-
 	return Passenger;
-
 });
