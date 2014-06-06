@@ -1,83 +1,122 @@
-ES.Elevator = (function () {
-	var Elevator = function () {};
+define(function () {
+	var Elevator = function (params, controller) {
+		this.id = params.id;
+		this.capacity = params.capacity || 500;
+		this.speed = params.speed || 1000;
+		this.controller = controller;
+
+		this.direction = 1;
+		this.floor = controller.floors[0];
+		this.behaviors = [];
+		this.passengers = [];
+	};
+
+	Elevator.prototype.behaviors = null;
+
+	// The id of this elevator 
+	Elevator.prototype.id = null;
+
+	// The controller for this elevator
+	Elevator.prototype.controller = null;
 
 	// The capacity of the elevator in pounds
-	Elevator.prototype.capacity = 500;
+	Elevator.prototype.capacity = null;
 
-	// The current floor index of the elevator
-	// 0 is the ground floor
-	Elevator.prototype.floor = 10;
+	// The passengers currently riding in this elevator
+	Elevator.prototype.passengers = null;
 
-	// The default floor index for this elevator
-	Elevator.prototype.default_floor = 0;
+	// The current floor of the elevator
+	Elevator.prototype.floor = null;
 
-	// The time (in milliseconds) to travel one floor
-	Elevator.prototype.speed = 1000;
+	// The destination received from the controller 
+	Elevator.prototype.destination = null;
 
-	// Whether the elevator has permission to move
-	Elevator.prototype.can_move = true;
+	// Going up or down?
+	// 0: none
+	// 1: up
+	// -1: down
+	Elevator.prototype.direction = 0;
 
-	// Move to the given floor, and return the current floor index
-	Elevator.prototype.move = function (destination_floor) {
-		var direction = null;
+	// Receive a pickup from the controller
+	Elevator.prototype.getPickup = function () {
+		if (this.direction === 1) {
 
-		if (destination_floor < this.floor) {
-			direction = -1;
-		} else if (destination_floor > this.floor) {
-			direction = 1;
-		} else {
-			direction = 0;
-			console.log('Already there!');
-			return this.floor;
-		}
+			// get up pickup from controller
+			var up_pickups = this.controller.pickups.up;
 
-		var that = this;
-
-		console.log('Leaving floor: ' + that.floor);
-
-		var t = setInterval(function () {
-
-			if (that.can_move) {
-				if (direction === 1) {
-					that.floor++;
-				} else if (direction === -1) {
-					that.floor--;
-				}
-
-				if (destination_floor === that.floor) {
-					console.log('Arrived at destination floor: ' + that.floor);
-					clearInterval(t);
-					return that.floor;
-				} else {
-					console.log('Arrived at floor: ' + that.floor);
+			// loop through up pick ups 
+			for (var i = 0, l = up_pickups.length; i < l; i++) {
+				if (up_pickups[i].id > this.floor.id) {
+					this.destination = up_pickups.splice(i);
 				}
 			}
 
-		}, this.speed);
+		} else if (this.direction === -1) {
+			// get down pickup from controller
+			var down_pickups = this.controller.pickups.down;
+
+			// loop through down pick ups 
+			for (var i = 0, l = down_pickups.length; i < l; i++) {
+				if (down_pickups[i].id < this.floor.id) {
+					this.destination = down_pickups.splice(i);
+				}
+			}
+
+		} else if (this.direction === 0) {
+			// get up or down pickup from controller
+
+		}
 	};
 
-	// Revoke elevator's moving permission
-	Elevator.prototype.halt = function () {
-		this.can_move = false;
-		console.log('Revoked ability for elevator to move');
-		console.log('The current floor: ' + this.floor);
+	// The time (in milliseconds) to travel one floor
+	Elevator.prototype.speed = null;
+
+	// Move one floor up or down
+	Elevator.prototype.move = function () {
+
 	};
 
-	// Reinstate elevator's moving permission
-	Elevator.prototype.resume = function () {
-		this.can_move = true;
-		console.log('Reinstated ability for elevator to move');
-	}
-
-	// Move the elevator to the ground floor (floor 0)
-	Elevator.prototype.toGround = function () {
-		return this.move(0);
+	// Add a behavior to the behavior list
+	Elevator.prototype.addBehavior = function (behavior) {
+		this.behaviors.push(behavior);
 	};
 
-	// Move the elevator to its default floor 
-	Elevator.prototype.toDefault = function () {
-		return this.move(this.default_floor);
-	}
+	Elevator.prototype.update = function () {
+		for (var i = 0, l = this.behaviors.length; i < l; i++) {
+			this.behaviors[i].call(this);
+		}
+	};
 
 	return Elevator;
-})();
+});
+
+/*
+var e = new Elevator();
+
+e.addBehavior(function () {
+	if ()
+});
+
+e.update();
+
+e = new Elevator();
+e.addBehavior(waitOnFloor(floors[5]));
+
+
+e2 = new Elevator();
+e.addBehavior(waitOnFloor(floors[3]));
+
+function waitOnFloor()) {
+	return function () {
+		if (this.waiting()) {
+			this.goToDefaultFloor();
+		}
+	}
+}
+
+e.addBehavior(function () {
+	if (this.broken()) {
+		this.maintenance.call();
+	}
+});
+*/
