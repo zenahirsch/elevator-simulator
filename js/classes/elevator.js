@@ -73,9 +73,10 @@ define(['./entity'], function (Entity) {
 
 	// Move one floor up or down
 	Elevator.prototype.move = function () {
-
+		console.log('Elevator ' + this.id + ' moved! (Not really.)');
 	};
 
+	/*
 	// Add a behavior to the behavior list
 	Elevator.prototype.addBehavior = function (behavior) {
 		this.behaviors.push(behavior);
