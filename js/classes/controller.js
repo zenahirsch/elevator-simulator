@@ -1,11 +1,15 @@
-define(['./elevator', './floor'], function (Elevator, Floor) {
-
+define(['./elevator', './floor', './entity'], function (Elevator, Floor) {
 	var Controller = function () {
 		this.elevators = [];
 		this.floors = [];
+
 		this.pickups = {};
 		this.pickups.up = [];
 		this.pickups.down = [];
+
+		this.claimedPickups = {};
+		this.claimedPickups.up = [];
+		this.claimedPickups.down = [];
 	};
 
 	// The elevators controlled by this controller
@@ -16,6 +20,9 @@ define(['./elevator', './floor'], function (Elevator, Floor) {
 
 	// Floors that have requested up or down elevators
 	Controller.prototype.pickups = null;
+
+	// Pickups that are currently claimed (owned as destination) by an elevator, not yet picked up
+	Controller.prototype.claimedPickups = null;
 
 	// Registers elevators to this controller
 	Controller.prototype.registerElevators = function (num_elevators, controller) {

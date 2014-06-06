@@ -38,28 +38,26 @@ define(function () {
 	Elevator.prototype.direction = 0;
 
 	// Receive a pickup from the controller
-	Elevator.prototype.getPickup = function () {
+	Elevator.prototype.getPickupDestination = function () {
 		if (this.direction === 1) {
-
-			// get up pickup from controller
-			var up_pickups = this.controller.pickups.up;
-
-			// loop through up pick ups 
-			for (var i = 0, l = up_pickups.length; i < l; i++) {
-				if (up_pickups[i].id > this.floor.id) {
-					this.destination = up_pickups.splice(i);
+			for (var i = 0; i < this.controller.pickups.up.length; i++) {
+				var pickup = this.controller.pickups.up[i];
+				if (pickup.id > this.floor.id && !pickup.isClaimed(1)) {
+					console.log('getting up pickup');
+					this.destination = this.controller.pickups.up[i]; // set this elevator's destination to the floor
+					this.controller.claimedPickups.up[this.id] = this.controller.pickups.up[i]; // set the elevator's index in claimed Pickups.up to this floor
 				}
+
 			}
-
 		} else if (this.direction === -1) {
-			// get down pickup from controller
-			var down_pickups = this.controller.pickups.down;
-
-			// loop through down pick ups 
-			for (var i = 0, l = down_pickups.length; i < l; i++) {
-				if (down_pickups[i].id < this.floor.id) {
-					this.destination = down_pickups.splice(i);
+			for (var i = 0; i < this.controller.pickups.down.length; i++) {
+				var pickup = this.controller.pickups.down[i];
+				if (pickup.id < this.floor.id && !pickup.isClaimed(-1)) {
+					console.log('getting down pickup');
+					this.destination = this.controller.pickups.down[i]; // set this elevator's destination to the floor
+					this.controller.claimedPickups.down[this.id] = this.controller.pickups.down[i]; // set the elevator's index in claimed Pickups.up to this floor
 				}
+
 			}
 
 		} else if (this.direction === 0) {

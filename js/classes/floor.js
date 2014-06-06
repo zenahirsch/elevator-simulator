@@ -27,9 +27,26 @@ define(function () {
 		}
 	};
 
+	// Check whether a given floor has already been claiemd
+	Floor.prototype.isClaimed = function (direction) {
+		var d = '';
+		if (direction === 1) {
+			d = 'up';
+		} else if (direction === -1) {
+			d = 'down';
+		}
+
+		for (var i = 0; i < this.controller.claimedPickups[d].length; i++) {
+			if (this.controller.claimedPickups[d][i] === this) {
+				return true;
+			}
+		}
+
+		return false;
+	};
+
 	// The passengers waiting for an eleator on this floor
 	Floor.prototype.passengers = null;
 
 	return Floor;
-
 });
