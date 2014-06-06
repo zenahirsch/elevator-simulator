@@ -13,8 +13,6 @@ define(['./entity'], function (Entity) {
 
 	Elevator.prototype = new Entity();
 
-	//Elevator.prototype.behaviors = null;
-
 	// The id of this elevator 
 	Elevator.prototype.id = null;
 
@@ -76,48 +74,5 @@ define(['./entity'], function (Entity) {
 		console.log('Elevator ' + this.id + ' moved! (Not really.)');
 	};
 
-	/*
-	// Add a behavior to the behavior list
-	Elevator.prototype.addBehavior = function (behavior) {
-		this.behaviors.push(behavior);
-	};
-
-	Elevator.prototype.update = function () {
-		for (var i = 0, l = this.behaviors.length; i < l; i++) {
-			this.behaviors[i].call(this);
-		}
-	};
-
 	return Elevator;
 });
-
-/*
-var e = new Elevator();
-
-e.addBehavior(function () {
-	if ()
-});
-
-e.update();
-
-e = new Elevator();
-e.addBehavior(waitOnFloor(floors[5]));
-
-
-e2 = new Elevator();
-e.addBehavior(waitOnFloor(floors[3]));
-
-function waitOnFloor()) {
-	return function () {
-		if (this.waiting()) {
-			this.goToDefaultFloor();
-		}
-	}
-}
-
-e.addBehavior(function () {
-	if (this.broken()) {
-		this.maintenance.call();
-	}
-});
-*/
