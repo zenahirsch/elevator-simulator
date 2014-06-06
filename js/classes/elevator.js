@@ -1,4 +1,4 @@
-define(function () {
+define(['./entity'], function (Entity) {
 	var Elevator = function (params, controller) {
 		this.id = params.id;
 		this.capacity = params.capacity || 500;
@@ -7,11 +7,13 @@ define(function () {
 
 		this.direction = 1;
 		this.floor = controller.floors[0];
-		this.behaviors = [];
+		//this.behaviors = [];
 		this.passengers = [];
 	};
 
-	Elevator.prototype.behaviors = null;
+	Elevator.prototype = new Entity();
+
+	//Elevator.prototype.behaviors = null;
 
 	// The id of this elevator 
 	Elevator.prototype.id = null;

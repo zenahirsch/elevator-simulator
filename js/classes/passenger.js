@@ -1,6 +1,10 @@
-define(function () {
+define(['./entity'], function (Entity) {
+	var Passenger = function (params) {
+		this.id = params.id;
+		this.weight = params.weight;
+	};
 
-	var Passenger = function () {};
+	Passenger.prototype = new Entity();
 
 	// The passenger's desired destination
 	Passenger.prototype.destination = null;
