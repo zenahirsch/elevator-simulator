@@ -4,7 +4,7 @@ define(function () {
 		this.behaviors = [];
 	};
 
-	Entity.prototype.addBehavior = function (behavior) {
+	Entity.prototype.registerBehavior = function (behavior) {
 		this.behaviors.push(behavior);
 	};
 

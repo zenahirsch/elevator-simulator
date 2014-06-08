@@ -1,0 +1,76 @@
+1. PASSENGER BEHAVIORS
+==================================================
+   States: NOT_WAITING, WAITING, RIDING
+   Directions: UP, DOWN
+==================================================
+
+If not state set, set state to NOT_WAITING.
+
+If NOT_WAITING, randomly decide whether to WAIT.
+
+If WAITING, randomly set direction to UP or DOWN.
+
+If WAITING, pick a destination above (if direction is UP) or below (if direction is DOWN).
+
+If WAITING, and no open elevator in the correct direction is present, continue WAITING.
+
+If WAITING, and an open elevator in the correct direction is present, attempt to enter elevator. If successful, change state to RIDING. Otherwise, continue WAITING.
+
+If RIDING, and the elevator is OPEN on the passenger's destination, enter destination floor. Set state to NOT_WAITING.
+
+If RIDING, and the elevator is not OPEN or the floor is not the passenger's destination, continue RIDING.
+
+
+2. FLOOR BEHAVIORS
+=========================================================
+   States: UP_REQUEST, DOWN_REQUEST, BOTH_REQUEST, NO_REQUEST
+   Directions: None
+=========================================================
+
+Set state to NO_REQUEST.
+
+Query all passengers for pickup requests. If there are passengers, and floor is not already requesting a pickup in the passenger's direction, request a pickup in that direction (UP_REQUEST, DOWN_REQUEST, or BOTH_REQUEST).
+
+If there are no passengers requesting a pickup, set state to NO_REQUEST.
+
+
+3. CONTROLLER BEHAVIORS
+=========================================================
+   States: None
+   Directions: None
+=========================================================
+
+0. Query all floors for pickup requests. Sort these in up and down pickup arrays.
+
+1. If the controller has not reached the maximum number of passengers, register 1-3 new passenger(s) to the 0th floor.
+
+2. If there are passengers on the 0th floor who are NOT_WAITING, remove 1-3 of them.
+
+
+4. ELEVATOR BEHAVIORS
+=========================================================
+   States: STOP, OPEN, MOVING
+   Directions: UP, DOWN
+=========================================================
+
+0. If no state is set, stop. (Set state to STOP.)
+
+1. If no direction is set, set direction to UP.
+
+2. If no floor is set, set floor to the 0th floor.
+
+3. If the elevator can go no further in its set direction, reverse direction.
+
+4. Get nearest pickup (in the correct direction) from controller.
+
+5. If the current floor is the destination, stop. (Set state to STOP.)
+
+6. If the current state is STOP and the current floor is the destination, OPEN doors. Clear destination.
+
+7. If the current state is OPEN and there are no more waiting passengers in the correct direction, change state to STOP.
+
+8. If there is no destination, query passengers and pickup for the nearest destination. Set as destination.
+
+9. If there are no passengers and no current pickup for this elevator, reverse direction and get nearest pickup from controller (in new direction). If there is one, set as destination.
+
+10. If there is a destination, set state to MOVING. Move up or down one floor toward the destination.

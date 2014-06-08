@@ -1,4 +1,4 @@
-define(function () {
+define(['./entity'], function (Entity) {
 	var Floor = function (params, controller) {
 		this.id = params.id;
 		this.controller = controller;
@@ -6,46 +6,100 @@ define(function () {
 		this.passengers = [];
 	};
 
-	// The id of the floor (0 = ground level)
-	Floor.prototype.id = null;
+	Floor.prototype = new Entity();
+
+	Floor.prototype.NONE_REQUEST = 0;
+	Floor.prototype.UP_REQUEST = 1;
+	Floor.prototype.DOWN_REQUEST = -1;
+	Floor.prototype.BOTH_REQUEST = 2;
 
 	// Has this floor requested an elevator?
 	// 0: not requested
-	// 1: up
-	// -1: down
-	Floor.prototype.elevatorRequest = 0;
-
-	// Request a pickup to the controller
-	Floor.prototype.requestPickup = function (direction) {
-		if (direction === 1) {
-			this.elevatorRequest = 1;
-			this.controller.pickups.up.push(this);
-		} else if (direction === -1) {
-			this.elevatorRequest = -1;
-			this.controller.pickups.down.push(this);
-		}
-	};
-
-	// Check whether a given floor has already been claiemd
-	Floor.prototype.isClaimed = function (direction) {
-		var d = '';
-		if (direction === 1) {
-			d = 'up';
-		} else if (direction === -1) {
-			d = 'down';
-		}
-
-		for (var i = 0; i < this.controller.claimedPickups[d].length; i++) {
-			if (this.controller.claimedPickups[d][i] === this) {
-				return true;
-			}
-		}
-
-		return false;
-	};
+	// 1: requested up
+	// -1: requested down
+	// 2: requested both
+	Floor.prototype.state = null;
 
 	// The passengers waiting for an eleator on this floor
 	Floor.prototype.passengers = null;
+
+	// Request a pickup to the controller
+	Floor.prototype.requestPickup = function (direction) {
+		if (direction === this.UP_REQUEST) {
+
+			if (this.state === this.UP_REQUEST || this.state === this.DOWN_REQUEST) {
+				this.state = this.BOTH_REQUEST;
+			} else {
+				this.state = this.UP_REQUEST;
+			}
+
+			this.controller.pickups.up.push(this);
+
+		} else if (direction === this.DOWN_REQUEST) {
+
+			if (this.state === this.UP_REQUEST || this.state === this.DOWN_REQUEST) {
+				this.state = this.BOTH_REQUEST;
+			} else {
+				this.state = this.DOWN_REQUEST;
+			}
+
+			this.controller.pickups.down.push(this);
+
+		}
+	};
+
+	// Get the state of the floor
+	Floor.prototype.getState = function () {
+		return this.state;
+	};
+
+	// Is this floor requesting up?
+	Floor.prototype.isRequestingUp = function () {
+		if (this.state === this.UP_REQUEST) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+	// Is this floor requesting down?
+	Floor.prototype.isRequestingDown = function () {
+		if (this.state === this.DOWN_REQUEST) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+	// Is this floor requesting up and down?
+	Floor.prototype.isRequestingBoth = function () {
+		if (this.state === this.BOTH_REQUEST) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+	// Are there waiting passengers for the specified direction?
+	Floor.prototype.areWaitingPassengers = function (direction) {
+		var passengers = this.passengers;
+
+		if (direction === 1) {
+			for (var i = 0; i < passengers.length; i++) {
+				if (passengers[i].isWaiting() && passengers[i].isGoingUp()) {
+					return true;
+				}
+			}
+			return false;
+		} else if (direction === -1) {
+			for (var i = 0; i < passengers.length; i++) {
+				if (passengers[i].isWaiting() && passengers[i].isGoingDown()) {
+					return true;
+				}
+			}
+			return false;
+		}
+	};
 
 	return Floor;
 });
