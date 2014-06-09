@@ -16,31 +16,110 @@ define(function (require) {
 
 	var e = c.elevators[0];
 	var f = c.floors[0];
+	var p = c.passengers[0];
 
-/* =======================
-   ELEVATOR BEHAVIORS
-   ==================== */
 
-   // If no state is set, stop. (Set state to STOP.)
-	e.registerBehavior(new Behavior(0, function () {
-		if (this.state === null) {
-			this.stop();
+/*  =======================
+    PASSENGER BEHAVIORS
+    ======================= */
+
+    // If passenger is not waiting, randomly decide whether to wait.
+	// 33.3% chance of waiting
+	p.registerBehavior(new Behavior(0, function () {
+		if (!this.isWaiting() && !this.isRiding()) {
+			var r = Math.floor(Math.random() * 3);
+			if (r === 2) {
+				this.wait();
+				if (this.isOnGroundFloor()) {
+					this.goUp();
+				} else if (this.isOnTopFloor()) {
+					this.goDown();
+				} else {
+					var d = Math.floor(Math.random() * 2);
+					d === 0 ? this.goDown() : this.goUp();
+				}
+			}
 		}
 	}));
 
-	// If no direction is set, set direction to UP.
-	e.registerBehavior(new Behavior(1, function () {
-		if (this.getDirection() === null) {
-			this.setDirectionUp();
+	// If the passenger is waiting, pick a destination above
+	// (if direction is UP) or below (if direction is DOWN).
+	p.registerBehavior(new Behavior(1, function () {
+		if (this.isWaiting()) {
+			var floors = this.controller.floors;
+			var cur_floor_id = this.floor.id;
+			var top_floor_id = floors[this.controller.floors.length - 1].id;
+			var bottom_floor_id = floors[0].id;
+			var possible_floors = [];
+
+			if (this.isGoingUp()) {
+				possible_floors = floors.slice(cur_floor_id + 1, top_floor_id + 1);
+			}
+
+			if (this.isGoingDown()) {
+				possible_floors = floors.slice(bottom_floor_id, cur_floor_id);
+			}
+
+			var r = Math.floor(Math.random() * possible_floors.length);
+			this.setDestination(possible_floors[r]);
 		}
 	}));
 
-	// If no floor is set, set floor to the 0th floor.
-	e.registerBehavior(new Behavior(2, function () {
-		if (this.getFloor() === null) {
-			this.floor = c.floors[0];
+	// If the passenger is waiting, and no open elevator
+	// in the correct direction is present, continue waiting.
+	p.registerBehavior(new Behavior (2, function () {
+		if (this.isWaiting()) {
+			var passenger_direction = this.get
+			var local_elevators = this.floor.getElevators();
+			if (local_elevators.length > 0) {
+				for (var i = 0; i < local_elevators.length; i++) {
+					if (local_elevators[i].getDirection() === this.getDirection() && this.canEnter(local_elevators[i])) {
+						this.enter(local_elevators[i]);
+						break;
+					}
+				}
+			}
 		}
 	}));
+
+	// If the passenger is riding an elevator, and the
+	// elevator is OPEN, and the elevator is on the
+	// passenger's destination floor, enter destination floor.
+	// Set passenger state to NOT_WAITING.
+	p.registerBehavior(new Behavior(3, function () {
+
+	}));
+
+
+/*  =======================
+    FLOOR BEHAVIORS
+    ======================= */
+
+
+/*  =======================
+    CONTROLLER BEHAVIORS
+    ======================= */
+
+    // Gather pickups from all floors. Sort in down and up pickup arrays.
+    c.registerBehavior(new Behavior(0, function () {
+    	this.gatherPickups();
+    }));
+
+/*
+    // If the controller has not reached the max number of
+    // passengers, register 1-3 new passenger(s). 
+    c.registerBehavior(new Behavior(1, function () {
+    	if (this.passengers.length < this.maxPassengers) {
+    		var r = Math.floor((Math.random() * 3) + 1);
+    		this.registerPassengers(r, this);
+    	}
+    }));
+   */
+
+
+/*  =======================
+    ELEVATOR BEHAVIORS
+    ======================= */
 
 	// If the elevator can go no further in its set 
 	// direction, reverse direction
@@ -48,11 +127,11 @@ define(function (require) {
 		var top_floor = c.floors[c.floors.length - 1];
 		var bottom_floor = c.floors[0];
 
-		if (this.directionIsUp() && this.getFloor() === top_floor) {
+		if (this.isGoingUp() && this.getFloor() === top_floor) {
 			this.reverseDirection();
 		} 
 
-		if (this.directionIsDown() && this.getFloor() === bottom_floor) {
+		if (this.isGoingDown() && this.getFloor() === bottom_floor) {
 			this.reverseDirection();
 		}
 	}));
@@ -70,10 +149,29 @@ define(function (require) {
 	}));
 
 	// If the elevtor is stopped and at its destination, open.
-	// Then, clear the destination.
+	// Then, remove from the controller's list of pickups and
+	// finally, clear this elevator's destination.
 	e.registerBehavior(new Behavior(6, function () {
 		if (this.isStopped() && this.isAtDestination()) {
 			this.open();
+			if (this.isGoingUp()) {
+				var ups = this.controller.pickups.up;
+				for (var i = 0; i < ups.length; i++) {
+					if (this.getDestination().id === ups[i].id) {
+						ups.slice(i);
+					}
+				}
+			}
+
+			if (this.isGoingDown()) {
+				var downs = this.controller.pickups.down;
+				for (var i = 0; i < downs.length; i++) {
+					if (this.getDestination().id === downs[i].id) {
+						downs.slice(i);
+					}
+				}
+			}
+
 			this.clearDestination();
 		}
 	}));
@@ -82,7 +180,7 @@ define(function (require) {
 	// passengers (in that direction), change state to stop.
 	// This is like closing the doors.
 	e.registerBehavior(new Behavior(7, function () {
-		if (this.isOpen() && !this.floor.areWaitingPassengers(this.direction)) {
+		if (this.isOpen() && !this.floor.hasWaitingPassengers(this.direction)) {
 			this.stop();
 		}
 	}));
@@ -95,7 +193,9 @@ define(function (require) {
 			for (var i = 0; i < this.passengers.length; i++) {
 				destinations.push(this.passengers[i].destination);
 			}
-			destinations.push(this.pickup);
+			if (this.pickup) {
+				destinations.push(this.pickup);
+			}
 			destinations.sort(function (a, b) {
 				return a.id > b.id ? 1 : -1;
 			});
@@ -103,13 +203,16 @@ define(function (require) {
 		}
 	}));
 
-	// Iff there are no passengers and no pickup, reverse
+	// If there are no passengers and no pickup, reverse
 	// direction and request new pickup from controller. If
-	// there is one, set it as the destination.
+	// there is one, set it as the destination. If there is
+	// not, reverse the direction again.
 	e.registerBehavior(new Behavior(9, function () {
 		if (!this.hasPassengers() && !this.hasPickup()) {
 			this.reverseDirection();
-			this.setPickup();
+			if (!this.setPickup()) {
+				this.reverseDirection();
+			}
 		}
 	}));
 
@@ -121,24 +224,6 @@ define(function (require) {
 		}
 	}));
 
-/* =======================
-   CONTROLLER BEHAVIORS
-   ==================== */
-
-    // Gather pickups from all floors. Sort in down and up pickup arrays.
-    c.registerBehavior(new Behavior(0, function () {
-    	this.gatherPickups();
-    }));
-
-    c.registerBehavior(new Behavior(1, function () {
-
-    }));
-
-// FLOOR BEHAVIORS
-
-
-// PASSENGER BEHAVIORS
-	
 
 // UPDATES
 

@@ -35,6 +35,10 @@ define(['./elevator', './floor', './passenger', './entity'], function (Elevator,
 				capacity: 1000,
 				speed: 1000
 			}, this));
+
+			this.elevators[i].setFloor(0);
+			this.elevators[i].open();
+			this.elevators[i].setDirectionUp();
 		}
 	};
 
@@ -55,6 +59,9 @@ define(['./elevator', './floor', './passenger', './entity'], function (Elevator,
 				name: 'Unnamed',
 				weight: 100,
 			}, this));
+
+			this.passengers[i].doNotWait();
+			this.passengers[i].setFloor(0);
 		}
 	};
 
@@ -70,10 +77,12 @@ define(['./elevator', './floor', './passenger', './entity'], function (Elevator,
 
 		entities = passengers.concat(floors, controllers, elevators);
 
-		console.log(entities);
 		for (var i = 0; i < entities.length; i++) {
 			entities[i].update();
 		}
+
+		console.log('Updated all entities.');
+		console.log(entities);
 	};
 
 	// Get all pickups from the floors

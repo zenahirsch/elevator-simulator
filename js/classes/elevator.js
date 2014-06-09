@@ -92,7 +92,7 @@ define(['./entity'], function (Entity) {
 	};
 
 	// Is the elevator going up?
-	Elevator.prototype.directionIsUp = function () {
+	Elevator.prototype.isGoingUp = function () {
 		if (this.direction === this.UP) {
 			return true;
 		} else {
@@ -101,7 +101,7 @@ define(['./entity'], function (Entity) {
 	};
 
 	// Is the elevator going down?
-	Elevator.prototype.directionIsDown = function () {
+	Elevator.prototype.isGoingDown = function () {
 		if (this.direction === this.DOWN) {
 			return true;
 		} else {
@@ -112,7 +112,7 @@ define(['./entity'], function (Entity) {
 	// Return the current state of the elevator
 	Elevator.prototype.getState = function () {
 		return this.state;
-	};
+	}; 
 
 	// Is the elevator stopped?
 	Elevator.prototype.isStopped = function () {
@@ -160,6 +160,11 @@ define(['./entity'], function (Entity) {
 		return this.floor;
 	};
 
+	// Set the floor of the elevator
+	Elevator.prototype.setFloor = function (floor_id) {
+		this.floor = this.controller.floors[floor_id];
+	};
+
 	// Move one floor in the elevator's direction
 	Elevator.prototype.move = function () {
 		this.state = this.MOVING;
@@ -175,7 +180,7 @@ define(['./entity'], function (Entity) {
 
 	// Open doors and allow passengers in
 	Elevator.prototype.open = function () {
-		if (this.state === this.STOP) {
+		if (this.state != this.MOVING) {
 			this.state = this.OPEN;
 			return true;
 		} else {

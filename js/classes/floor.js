@@ -81,7 +81,7 @@ define(['./entity'], function (Entity) {
 	};
 
 	// Are there waiting passengers for the specified direction?
-	Floor.prototype.areWaitingPassengers = function (direction) {
+	Floor.prototype.hasWaitingPassengers = function (direction) {
 		var passengers = this.passengers;
 
 		if (direction === 1) {
@@ -99,6 +99,19 @@ define(['./entity'], function (Entity) {
 			}
 			return false;
 		}
+	};
+
+	// Return an array of elevators currently on this floor 
+	Floor.prototype.getElevators = function () {
+		var elevators = this.controller.elevators;
+		var local_elevators = [];
+		for (var i = 0; i < elevators.length; i++) {
+			if (elevators[i].floor === this) {
+				local_elevators.push(elevators[i]);
+			}
+		}
+
+		return local_elevators;
 	};
 
 	return Floor;
