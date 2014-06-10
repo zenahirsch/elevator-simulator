@@ -39,6 +39,7 @@ define(['./entity'], function (Entity) {
 	// Set the floor of the current passenger
 	Passenger.prototype.setFloor = function (floor_id) {
 		this.floor = this.controller.floors[floor_id];
+		this.controller.floors[floor_id].passengers.push(this);
 	};
 
 	// Get the passenger's current floor
@@ -179,6 +180,17 @@ define(['./entity'], function (Entity) {
 			}
 		} 
 		this.ride(elevator);
+	};
+
+	// Exit elevator to the specified floor
+	Passenger.prototype.exit = function (floor) {
+		floor.passengers.push(this);
+		for (var i = 0; i < this.elevator.passengers.length; i++) {
+			if (this.elevator.passengers[i].id === this.id) {
+				this.elevator.passengers.splice(i, 1);
+			}
+		} 
+		this.doNotWait();
 	};
 
 	return Passenger;

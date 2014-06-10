@@ -160,6 +160,15 @@ define(['./entity'], function (Entity) {
 		return this.floor;
 	};
 
+	// Is the elevator on the given floor?
+	Elevator.prototype.isOnFloor = function (floor) {
+		if (this.floor === floor) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
 	// Set the floor of the elevator
 	Elevator.prototype.setFloor = function (floor_id) {
 		this.floor = this.controller.floors[floor_id];

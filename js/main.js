@@ -87,13 +87,48 @@ define(function (require) {
 	// passenger's destination floor, enter destination floor.
 	// Set passenger state to NOT_WAITING.
 	p.registerBehavior(new Behavior(3, function () {
-
+		if (this.isRiding() && this.elevator.isOpen() && this.elevator.isOnFloor(this.getDestination())) {
+			this.exit(this.elevator.getFloor());
+		}
 	}));
 
 
 /*  =======================
     FLOOR BEHAVIORS
     ======================= */
+
+    // Set floor state to NO_REQUEST.
+    f.registerBehavior(new Behavior(0, function () {
+    	this.clearRequests();
+    }));
+
+    // If there are waiting passengers on this floor, 
+    // for each waiting passenger, set the state to the 
+    // appropriate request state.
+    f.registerBehavior(new Behavior(1, function () {
+    	var waiting_passengers = this.getWaitingPassengers();
+    	if (waiting_passengers.length > 0) {
+    		for (var i = 0; i < waiting_passengers.length; i++) {
+    			if (waiting_passengers[i].isGoingUp()) {
+    				if (this.isRequestingDown()) {
+    					this.requestBoth();
+    					break;
+    				} else {
+    					this.requestUp();
+    				}
+    			}
+
+    			if (waiting_passengers[i].isGoingDown()) {
+    				if (this.isRequestingUp()) {
+    					this.requestBoth();
+    					break;
+    				} else {
+    					this.requestDown();
+    				}
+    			}
+    		}
+    	}
+    }));
 
 
 /*  =======================
@@ -227,6 +262,10 @@ define(function (require) {
 
 // UPDATES
 
+	c.updateAll();
+	c.updateAll();
+	c.updateAll();
+	c.updateAll();
 	c.updateAll();
 
 });

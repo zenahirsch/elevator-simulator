@@ -12,8 +12,6 @@
 
 3. If RIDING, and the elevator is OPEN on the passenger's destination, enter destination floor. Set state to NOT_WAITING.
 
-If RIDING, and the elevator is not OPEN or the floor is not the passenger's destination, continue RIDING.
-
 
 2. FLOOR BEHAVIORS
 =========================================================
@@ -21,11 +19,9 @@ If RIDING, and the elevator is not OPEN or the floor is not the passenger's dest
    Directions: None
 =========================================================
 
-Set state to NO_REQUEST.
+0. Set state to NO_REQUEST.
 
-Query all passengers for pickup requests. If there are passengers, and floor is not already requesting a pickup in the passenger's direction, request a pickup in that direction (UP_REQUEST, DOWN_REQUEST, or BOTH_REQUEST).
-
-If there are no passengers requesting a pickup, set state to NO_REQUEST.
+1. If there are waiting passengers on this floor, for each waiting passenger, set the state to the appropriate request state.
 
 
 3. CONTROLLER BEHAVIORS

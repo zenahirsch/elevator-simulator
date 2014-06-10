@@ -48,6 +48,21 @@ define(['./entity'], function (Entity) {
 		}
 	};
 
+	// Make an up request
+	Floor.prototype.requestUp = function () {
+		this.state = this.UP_REQUEST;
+	};
+
+	// Make a down request
+	Floor.prototype.requestDown = function () {
+		this.state = this.DOWN_REQUEST;
+	};
+
+	// Make a both request
+	Floor.prototype.requestBoth = function () {
+		this.state = this.BOTH_REQUEST;
+	};
+
 	// Get the state of the floor
 	Floor.prototype.getState = function () {
 		return this.state;
@@ -80,6 +95,11 @@ define(['./entity'], function (Entity) {
 		}
 	};
 
+	// Clear all requests on this floor
+	Floor.prototype.clearRequests = function () {
+		this.state = this.NONE_REQUEST;
+	};
+
 	// Are there waiting passengers for the specified direction?
 	Floor.prototype.hasWaitingPassengers = function (direction) {
 		var passengers = this.passengers;
@@ -99,6 +119,17 @@ define(['./entity'], function (Entity) {
 			}
 			return false;
 		}
+	};
+
+	// Return array of waiting passengers on this floor
+	Floor.prototype.getWaitingPassengers = function () {
+		var waiting_passengers = [];
+		for (var i = 0; i < this.passengers.length; i++) {
+			if (this.passengers[i].isWaiting()) {
+				waiting_passengers.push(this.passengers[i]);
+			}
+		}
+		return waiting_passengers;
 	};
 
 	// Return an array of elevators currently on this floor 
