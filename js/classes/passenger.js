@@ -184,7 +184,7 @@ define(['./entity'], function (Entity) {
 
 	// Exit elevator to the specified floor
 	Passenger.prototype.exit = function (floor) {
-		floor.passengers.push(this);
+		this.setFloor(floor.id);
 		for (var i = 0; i < this.elevator.passengers.length; i++) {
 			if (this.elevator.passengers[i].id === this.id) {
 				this.elevator.passengers.splice(i, 1);

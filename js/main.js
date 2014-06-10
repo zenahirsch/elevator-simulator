@@ -30,12 +30,16 @@ define(function (require) {
 			var r = Math.floor(Math.random() * 3);
 			if (r === 2) {
 				this.wait();
+				console.log('Passenger ' + this.id + ': is now waiting.');
 				if (this.isOnGroundFloor()) {
+					console.log('Passenger ' + this.id + ': now wants to go up.');
 					this.goUp();
 				} else if (this.isOnTopFloor()) {
+					console.log('Passenger ' + this.id + ': now wants to go down.');
 					this.goDown();
 				} else {
 					var d = Math.floor(Math.random() * 2);
+					console.log('Passenger ' + this.id + ': now has a desired direction.');
 					d === 0 ? this.goDown() : this.goUp();
 				}
 			}
@@ -62,11 +66,13 @@ define(function (require) {
 
 			var r = Math.floor(Math.random() * possible_floors.length);
 			this.setDestination(possible_floors[r]);
+			console.log('Passenger ' + this.id + ': has a new destination: Floor ' + this.getDestination().id);
 		}
 	}));
 
-	// If the passenger is waiting, and no open elevator
-	// in the correct direction is present, continue waiting.
+	// If the passenger is waiting and there is a local elevator going
+	// in the passenger's direction, and the passenger can enter it,
+	// then the passenger enters the elevator.
 	p.registerBehavior(new Behavior (2, function () {
 		if (this.isWaiting()) {
 			var passenger_direction = this.get
@@ -74,21 +80,12 @@ define(function (require) {
 			if (local_elevators.length > 0) {
 				for (var i = 0; i < local_elevators.length; i++) {
 					if (local_elevators[i].getDirection() === this.getDirection() && this.canEnter(local_elevators[i])) {
+						console.log('Passenger ' + this.id +': is entering Elevator ' + local_elevators[i].id);
 						this.enter(local_elevators[i]);
 						break;
 					}
 				}
 			}
-		}
-	}));
-
-	// If the passenger is riding an elevator, and the
-	// elevator is OPEN, and the elevator is on the
-	// passenger's destination floor, enter destination floor.
-	// Set passenger state to NOT_WAITING.
-	p.registerBehavior(new Behavior(3, function () {
-		if (this.isRiding() && this.elevator.isOpen() && this.elevator.isOnFloor(this.getDestination())) {
-			this.exit(this.elevator.getFloor());
 		}
 	}));
 
@@ -99,6 +96,7 @@ define(function (require) {
 
     // Set floor state to NO_REQUEST.
     f.registerBehavior(new Behavior(0, function () {
+    	console.log('Floor ' + this.id + ': clearing requests.');
     	this.clearRequests();
     }));
 
@@ -111,18 +109,22 @@ define(function (require) {
     		for (var i = 0; i < waiting_passengers.length; i++) {
     			if (waiting_passengers[i].isGoingUp()) {
     				if (this.isRequestingDown()) {
+    					console.log('Floor ' + this.id + ': setting request to BOTH');
     					this.requestBoth();
     					break;
     				} else {
+    					console.log('Floor ' + this.id + ': setting request to UP');
     					this.requestUp();
     				}
     			}
 
     			if (waiting_passengers[i].isGoingDown()) {
     				if (this.isRequestingUp()) {
+    					console.log('Floor ' + this.id + ': setting request to BOTH');
     					this.requestBoth();
     					break;
     				} else {
+    					console.log('Floor ' + this.id + ': setting request to DOWN');
     					this.requestDown();
     				}
     			}
@@ -137,7 +139,9 @@ define(function (require) {
 
     // Gather pickups from all floors. Sort in down and up pickup arrays.
     c.registerBehavior(new Behavior(0, function () {
+    	console.log('Controller: gathering pickups.');
     	this.gatherPickups();
+    	console.log('Controller: found ' + this.pickups.up.length + ' up pickups and ' + this.pickups.down.length + ' down pickups');
     }));
 
 /*
@@ -173,12 +177,19 @@ define(function (require) {
 
 	// Get nearest pickup (in the correct direction) from controller
 	e.registerBehavior(new Behavior(4, function () {
+		console.log('Elevator ' + this.id + ': looking for a pickup.');
 		this.setPickup();
+		if (this.hasPickup()) {
+			console.log('Elevator ' + this.id + ': setting pickup to Floor ' + this.getPickup().id);
+		} else {
+			console.log('Elevator ' + this.id + ': no pickup set.')
+		}
 	}));
 
 	// If the current floor is the destination, stop.
 	e.registerBehavior(new Behavior(5, function () {
 		if (this.isAtDestination()) {
+			console.log('Elevator ' + this.id + ': stopping on Floor ' + this.getFloor().id);
 			this.stop();
 		}
 	}));
@@ -188,12 +199,13 @@ define(function (require) {
 	// finally, clear this elevator's destination.
 	e.registerBehavior(new Behavior(6, function () {
 		if (this.isStopped() && this.isAtDestination()) {
+			console.log('Elevator ' + this.id + ': opening doors.');
 			this.open();
 			if (this.isGoingUp()) {
 				var ups = this.controller.pickups.up;
 				for (var i = 0; i < ups.length; i++) {
 					if (this.getDestination().id === ups[i].id) {
-						ups.slice(i);
+						ups.slice(i, i + 1);
 					}
 				}
 			}
@@ -202,7 +214,7 @@ define(function (require) {
 				var downs = this.controller.pickups.down;
 				for (var i = 0; i < downs.length; i++) {
 					if (this.getDestination().id === downs[i].id) {
-						downs.slice(i);
+						downs.slice(i, i + 1);
 					}
 				}
 			}
@@ -211,11 +223,28 @@ define(function (require) {
 		}
 	}));
 
+	// If the elevator is open and it is at one of its passenger's destination,
+	// have that passenger exit.
+	e.registerBehavior(new Behavior(7, function () {
+		if (this.isOpen()) {
+			for (var i = 0; i < this.passengers.length; i++) {
+				if (this.isOnFloor(this.passengers[i].getDestination())) {
+					console.log('Elevator ' + this.id + ': releasing Passenger ' + this.passengers[i].id);
+					this.passengers[i].exit(this.getFloor());
+				}
+			}
+		}
+	}));
+
+	// If the elevator is open and there are waiting passengers going in its 
+	// direction, have those passengers enter.
+
 	// If the elevator is open and there are no more waiting
 	// passengers (in that direction), change state to stop.
 	// This is like closing the doors.
 	e.registerBehavior(new Behavior(7, function () {
 		if (this.isOpen() && !this.floor.hasWaitingPassengers(this.direction)) {
+			console.log('Elevator ' + this.id + ': closing doors.');
 			this.stop();
 		}
 	}));
@@ -224,17 +253,30 @@ define(function (require) {
 	// pickup for the nearest destination. Set as destination.
 	e.registerBehavior(new Behavior(8, function () {
 		if (this.getDestination() === null) {
+			console.log('Elevator ' + this.id + ': no destination, so picking one.');
 			var destinations = [];
 			for (var i = 0; i < this.passengers.length; i++) {
+				console.log('Elevator ' + this.id + ': found a passenger destination.');
 				destinations.push(this.passengers[i].destination);
 			}
 			if (this.pickup) {
+				console.log('Elevator ' + this.id + ': adding pickup destination to all possible destinations.');
 				destinations.push(this.pickup);
+			} else {
+				console.log('Elevator ' + this.id + ': no pickup destination found.')
 			}
-			destinations.sort(function (a, b) {
-				return a.id > b.id ? 1 : -1;
-			});
-			this.setDestination(destinations[0]);
+			if (destinations && destinations.length > 0) {
+				console.log('Elevator ' + this.id + ': sorting all possible destinations.');
+				destinations.sort(function (a, b) {
+					return a.id > b.id ? 1 : -1;
+				});
+				console.log('Elevator ' + this.id + ': the sorted destinations: ');
+				console.log(destinations);
+				console.log('Elevator ' + this.id + ': picking the first of the sorted destinations:');
+				console.log(destinations[0]);
+				this.setDestination(destinations[0]);
+				console.log('Elevator ' + this.id + ': set destination to Floor ' + this.getDestination().id);
+			}
 		}
 	}));
 
@@ -244,8 +286,11 @@ define(function (require) {
 	// not, reverse the direction again.
 	e.registerBehavior(new Behavior(9, function () {
 		if (!this.hasPassengers() && !this.hasPickup()) {
+			console.log('Elevator ' + this.id + ': no passengers and no pickup, so reversing direction.');
 			this.reverseDirection();
+			console.log('Elevator ' + this.id + ': checking for a pickup.');
 			if (!this.setPickup()) {
+				console.log('Elevator ' + this.id + ': still no pickup, so reversing direction again.');
 				this.reverseDirection();
 			}
 		}
@@ -255,6 +300,7 @@ define(function (require) {
 	// Move up or down one floor toward the destination.
 	e.registerBehavior(new Behavior(10, function () {
 		if (this.hasDestination()) {
+			console.log('Elevator ' + this.id + ': moving one floor.');
 			this.move();
 		}
 	}));
@@ -262,6 +308,11 @@ define(function (require) {
 
 // UPDATES
 
+	c.updateAll();
+	c.updateAll();
+	c.updateAll();
+	c.updateAll();
+	c.updateAll();
 	c.updateAll();
 	c.updateAll();
 	c.updateAll();

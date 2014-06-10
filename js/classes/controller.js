@@ -87,6 +87,9 @@ define(['./elevator', './floor', './passenger', './entity'], function (Elevator,
 
 	// Get all pickups from the floors
 	Controller.prototype.gatherPickups = function () {
+		this.pickups.up = [];
+		this.pickups.down = [];
+		
 		for (var i = 0; i < this.floors.length; i++) {
 			if (this.floors[i].isRequestingUp()) {
 				this.pickups.up.push(this.floors[i]);

@@ -74,7 +74,7 @@ define(['./entity'], function (Entity) {
 
 	// Set the destination for this elevator
 	Elevator.prototype.setDestination = function (floor) {
-		this.destiantion = floor;
+		this.destination = floor;
 	};
 
 	// Is there a destination set for this elevator?
@@ -177,7 +177,7 @@ define(['./entity'], function (Entity) {
 	// Move one floor in the elevator's direction
 	Elevator.prototype.move = function () {
 		this.state = this.MOVING;
-		this.floor = this.floor + this.direction;
+		this.floor = this.controller.floors[this.floor.id + this.direction];
 		return true;
 	};
 
@@ -225,6 +225,11 @@ define(['./entity'], function (Entity) {
 		}
 
 		return false;
+	};
+
+	// Return the current pickup destiantion
+	Elevator.prototype.getPickup = function () {
+		return this.pickup;
 	};
 
 	// Is there a pickup set for this elevator?
