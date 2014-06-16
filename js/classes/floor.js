@@ -11,16 +11,25 @@ define(['./entity'], function (Entity) {
 
 	Floor.prototype = new Entity();
 
+	/* 
+	 * The X and Y position of the floor on the canvas
+	 * Each floor is 2000px wide and 800px tall
+	 */
+	Floor.prototype.img_x = null;
+	Floor.prototype.img_y = null;
+
+	// Floor states
 	Floor.prototype.NONE_REQUEST = 0;
 	Floor.prototype.UP_REQUEST = 1;
 	Floor.prototype.DOWN_REQUEST = -1;
 	Floor.prototype.BOTH_REQUEST = 2;
 
-	// Has this floor requested an elevator?
-	// 0: not requested
-	// 1: requested up
-	// -1: requested down
-	// 2: requested both
+	/* Has this floor requested an elevator?
+	 * 0: not requested
+	 * 1: requested up
+	 * -1: requested down
+	 * 2: requested both
+	 */
 	Floor.prototype.state = null;
 
 	// The passengers waiting for an eleator on this floor
@@ -49,21 +58,26 @@ define(['./entity'], function (Entity) {
 			this.controller.pickups.down.push(this);
 
 		}
+
+		return this;
 	};
 
 	// Make an up request
 	Floor.prototype.requestUp = function () {
 		this.state = this.UP_REQUEST;
+		return this;
 	};
 
 	// Make a down request
 	Floor.prototype.requestDown = function () {
 		this.state = this.DOWN_REQUEST;
+		return this;
 	};
 
 	// Make a both request
 	Floor.prototype.requestBoth = function () {
 		this.state = this.BOTH_REQUEST;
+		return this;
 	};
 
 	// Get the state of the floor
@@ -101,6 +115,7 @@ define(['./entity'], function (Entity) {
 	// Clear all requests on this floor
 	Floor.prototype.clearRequests = function () {
 		this.state = this.NONE_REQUEST;
+		return this;
 	};
 
 	// Are there waiting passengers for the specified direction?

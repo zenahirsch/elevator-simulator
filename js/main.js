@@ -1,23 +1,66 @@
 define(function (require) {
-	var Controller = require('classes/controller');
-	var Behavior = require('classes/behavior');
-	var Passenger = require('classes/passenger');
+	var Controller = require('classes/controller'),
+		Behavior = require('classes/behavior'),
+		Passenger = require('classes/passenger'),
+		initialize,
+		c, e, f, p;
 
 	
-	var initialize = function () {
-		var c = new Controller();
-		c.registerFloors(5, c);
-		c.registerElevators(2, c);
-		c.registerPassengers(5, c);
-		return c;
-	};
+		initialize = function () {
+			var controller = new Controller();
 
-	var c = initialize();
+			controller.registerFloors(3, c);
+			controller.registerElevators(5, c);
+			controller.registerPassengers(10, c);
 
-	var e = c.elevators[0];
-	var f = c.floors[0];
-	var p = c.passengers[0];
+			return controller;
+		};
 
+		c = initialize();
+
+		e = c.elevators[0];
+		f = c.floors[0];
+		p = c.passengers[0];
+
+
+/*  =======================
+    CANVAS
+    ======================= */
+
+    var background_canvas = document.getElementById('game-background'),
+        elements_canvas = document.getElementById('game-elements'), 
+        bg_context = background_canvas.getContext('2d'),
+        elements_context = elements_canvas.getContext('2d'),
+        floors = c.floors,
+        elevators = c.elevators,
+        floor_img = new Image(),
+        elevator_img = new Image(),
+        drawGame,
+        drawBackground,
+       	drawElements,
+        i;
+
+    floor_img.src = './img/floor.png';
+    elevator_img.src = './img/elevator-closed.png';
+
+    drawBackground = function () {
+    	for (i = 0; i < floors.length; i++) {
+	    	bg_context.drawImage(floor_img, floors[i].img_x, floors[i].img_y);
+	    }
+    };
+
+    drawElements = function () {
+    	for (i = 0; i < elevators.length; i++) {
+	    	elements_context.drawImage(elevator_img, elevators[i].img_x, elevators[i].img_y);
+	    }
+    };
+
+    drawGame = function () {
+    	drawBackground();
+    	drawElements();
+    };
+
+    floor_img.onload = drawGame;
 
 /*  =======================
     PASSENGER BEHAVIORS
@@ -26,8 +69,11 @@ define(function (require) {
     // If passenger is not waiting, randomly decide whether to wait.
 	// 33.3% chance of waiting
 	p.registerBehavior(new Behavior(0, function () {
+		var r, 
+			d;
+
 		if (!this.isWaiting() && !this.isRiding()) {
-			var r = Math.floor(Math.random() * 3);
+			r = Math.floor(Math.random() * 3);
 			if (r === 2) {
 				this.wait();
 				console.log('Passenger ' + this.id + ': is now waiting.');
@@ -38,7 +84,7 @@ define(function (require) {
 					console.log('Passenger ' + this.id + ': now wants to go down.');
 					this.goDown();
 				} else {
-					var d = Math.floor(Math.random() * 2);
+					d = Math.floor(Math.random() * 2);
 					console.log('Passenger ' + this.id + ': now has a desired direction.');
 					d === 0 ? this.goDown() : this.goUp();
 				}
@@ -50,11 +96,12 @@ define(function (require) {
 	// (if direction is UP) or below (if direction is DOWN).
 	p.registerBehavior(new Behavior(1, function () {
 		if (this.isWaiting()) {
-			var floors = this.controller.floors;
-			var cur_floor_id = this.floor.id;
-			var top_floor_id = floors[this.controller.floors.length - 1].id;
-			var bottom_floor_id = floors[0].id;
-			var possible_floors = [];
+			var floors = this.controller.floors,
+				cur_floor_id = this.floor.id,
+				top_floor_id = floors[this.controller.floors.length - 1].id,
+				bottom_floor_id = floors[0].id,
+				possible_floors = [],
+				r;
 
 			if (this.isGoingUp()) {
 				possible_floors = floors.slice(cur_floor_id + 1, top_floor_id + 1);
@@ -64,21 +111,24 @@ define(function (require) {
 				possible_floors = floors.slice(bottom_floor_id, cur_floor_id);
 			}
 
-			var r = Math.floor(Math.random() * possible_floors.length);
+			r = Math.floor(Math.random() * possible_floors.length);
 			this.setDestination(possible_floors[r]);
 			console.log('Passenger ' + this.id + ': has a new destination: Floor ' + this.getDestination().id);
 		}
 	}));
 
-	// If the passenger is waiting and there is a local elevator going
-	// in the passenger's direction, and the passenger can enter it,
-	// then the passenger enters the elevator.
+	/*
+	 * If the passenger is waiting and there is a local elevator going
+	 * in the passenger's direction, and the passenger can enter it,
+	 * then the passenger enters the elevator.
+	*/
 	p.registerBehavior(new Behavior (2, function () {
 		if (this.isWaiting()) {
-			var passenger_direction = this.get
-			var local_elevators = this.floor.getElevators();
+			var local_elevators = this.floor.getElevators(),
+				i;
+
 			if (local_elevators.length > 0) {
-				for (var i = 0; i < local_elevators.length; i++) {
+				for (i = 0; i < local_elevators.length; i++) {
 					if (local_elevators[i].getDirection() === this.getDirection() && this.canEnter(local_elevators[i])) {
 						console.log('Passenger ' + this.id +': is entering Elevator ' + local_elevators[i].id);
 						this.enter(local_elevators[i]);
@@ -100,13 +150,17 @@ define(function (require) {
     	this.clearRequests();
     }));
 
-    // If there are waiting passengers on this floor, 
-    // for each waiting passenger, set the state to the 
-    // appropriate request state.
+    /* 
+     * If there are waiting passengers on this floor, 
+     * for each waiting passenger, set the state to the 
+     * appropriate request state.
+     */
     f.registerBehavior(new Behavior(1, function () {
-    	var waiting_passengers = this.getWaitingPassengers();
+    	var waiting_passengers = this.getWaitingPassengers(),
+    		i;
+
     	if (waiting_passengers.length > 0) {
-    		for (var i = 0; i < waiting_passengers.length; i++) {
+    		for (i = 0; i < waiting_passengers.length; i++) {
     			if (waiting_passengers[i].isGoingUp()) {
     				if (this.isRequestingDown()) {
     					console.log('Floor ' + this.id + ': setting request to BOTH');
@@ -160,11 +214,13 @@ define(function (require) {
     ELEVATOR BEHAVIORS
     ======================= */
 
-	// If the elevator can go no further in its set 
-	// direction, reverse direction
+	/*
+	 * If the elevator can go no further in its set 
+	 * direction, reverse direction
+	 */
 	e.registerBehavior(new Behavior(3, function () {
-		var top_floor = c.floors[c.floors.length - 1];
-		var bottom_floor = c.floors[0];
+		var top_floor = c.floors[c.floors.length - 1],
+			bottom_floor = c.floors[0];
 
 		if (this.isGoingUp() && this.getFloor() === top_floor) {
 			this.reverseDirection();
@@ -198,12 +254,16 @@ define(function (require) {
 	// Then, remove from the controller's list of pickups and
 	// finally, clear this elevator's destination.
 	e.registerBehavior(new Behavior(6, function () {
+		var ups,
+			downs,
+			i;
+
 		if (this.isStopped() && this.isAtDestination()) {
 			console.log('Elevator ' + this.id + ': opening doors.');
 			this.open();
 			if (this.isGoingUp()) {
-				var ups = this.controller.pickups.up;
-				for (var i = 0; i < ups.length; i++) {
+				ups = this.controller.pickups.up;
+				for (i = 0; i < ups.length; i++) {
 					if (this.getDestination().id === ups[i].id) {
 						ups.slice(i, i + 1);
 					}
@@ -211,8 +271,8 @@ define(function (require) {
 			}
 
 			if (this.isGoingDown()) {
-				var downs = this.controller.pickups.down;
-				for (var i = 0; i < downs.length; i++) {
+				downs = this.controller.pickups.down;
+				for (i = 0; i < downs.length; i++) {
 					if (this.getDestination().id === downs[i].id) {
 						downs.slice(i, i + 1);
 					}
@@ -226,8 +286,10 @@ define(function (require) {
 	// If the elevator is open and it is at one of its passenger's destination,
 	// have that passenger exit.
 	e.registerBehavior(new Behavior(7, function () {
+		var i;
+
 		if (this.isOpen()) {
-			for (var i = 0; i < this.passengers.length; i++) {
+			for (i = 0; i < this.passengers.length; i++) {
 				if (this.isOnFloor(this.passengers[i].getDestination())) {
 					console.log('Elevator ' + this.id + ': releasing Passenger ' + this.passengers[i].id);
 					this.passengers[i].exit(this.getFloor());
@@ -236,12 +298,14 @@ define(function (require) {
 		}
 	}));
 
-	// If the elevator is open and there are waiting passengers going in its 
-	// direction, have those passengers enter.
-
-	// If the elevator is open and there are no more waiting
-	// passengers (in that direction), change state to stop.
-	// This is like closing the doors.
+	/* 
+	 * If the elevator is open and there are waiting passengers going in its 
+	 * direction, have those passengers enter.
+	 *
+	 * If the elevator is open and there are no more waiting
+	 * passengers (in that direction), change state to stop.
+	 * This is like closing the doors.
+	 */
 	e.registerBehavior(new Behavior(7, function () {
 		if (this.isOpen() && !this.floor.hasWaitingPassengers(this.direction)) {
 			console.log('Elevator ' + this.id + ': closing doors.');
@@ -252,10 +316,13 @@ define(function (require) {
 	// If there is no destination, query passengers and
 	// pickup for the nearest destination. Set as destination.
 	e.registerBehavior(new Behavior(8, function () {
+		var destinations,
+			i;
+
 		if (this.getDestination() === null) {
 			console.log('Elevator ' + this.id + ': no destination, so picking one.');
-			var destinations = [];
-			for (var i = 0; i < this.passengers.length; i++) {
+			destinations = [];
+			for (i = 0; i < this.passengers.length; i++) {
 				console.log('Elevator ' + this.id + ': found a passenger destination.');
 				destinations.push(this.passengers[i].destination);
 			}
@@ -265,7 +332,7 @@ define(function (require) {
 			} else {
 				console.log('Elevator ' + this.id + ': no pickup destination found.')
 			}
-			if (destinations && destinations.length > 0) {
+			if (destinations && destinations.length) {
 				console.log('Elevator ' + this.id + ': sorting all possible destinations.');
 				destinations.sort(function (a, b) {
 					return a.id > b.id ? 1 : -1;

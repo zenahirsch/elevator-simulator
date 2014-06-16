@@ -29,68 +29,89 @@ define(['./elevator', './floor', './passenger', './entity'], function (Elevator,
 
 	// Registers elevators to this controller
 	Controller.prototype.registerElevators = function (num_elevators, controller) {
-		for (var i = 0; i < num_elevators; i++) {
+		var num_floors = this.floors.length,
+		    i;
+
+		for (i = 0; i < num_elevators; i++) {
 			this.elevators.push(new Elevator({
 				id: i,
-				capacity: 1000,
-				speed: 1000
+				capacity: 200,
+				speed: 1000,
+				x: (i * 70) + 80,
+				y: (num_floors * 163) 
 			}, this));
 
 			this.elevators[i].setFloor(0);
 			this.elevators[i].open();
 			this.elevators[i].setDirectionUp();
 		}
+
+		return this;
 	};
 
 	// Registers floors to this controller
 	Controller.prototype.registerFloors = function (num_floors, controller) {
-		for (var i = 0; i < num_floors; i++) {
+		var i;
+
+		for (i = 0; i < num_floors; i++) {
 			this.floors.push(new Floor({
-				id: i
+				id: i,
+				x: 0,
+				y: ((num_floors - 1) - i) * 200
 			}, this));
 		}
+
+		return this;
 	};
 
 	// Register passenger to this controlller
 	Controller.prototype.registerPassengers = function (num_passengers, controller) {
-		for (var i = 0; i < num_passengers; i++) {
+		var i;
+
+		for (i = 0; i < num_passengers; i++) {
 			this.passengers.push(new Passenger({
 				id: i,
 				name: 'Unnamed',
-				weight: 100,
+				weight: 120,
 			}, this));
 
 			this.passengers[i].doNotWait();
 			this.passengers[i].setFloor(0);
 		}
+
+		return this;
 	};
 
 	// Does updating all entities using a loop throw things out of sync?
 	// Some entities will get updated before others, etc.
 	Controller.prototype.updateAll = function () {
-		var entities = [];
+		var entities = [],
+			elevators = this.elevators,
+			floors = this.floors,
+			passengers = this.passengers,
+			controllers = this,
+			i;
 
-		var elevators = this.elevators;
-		var floors = this.floors;
-		var passengers = this.passengers;
-		var controllers = this;
+			entities = passengers.concat(floors, controllers, elevators);
 
-		entities = passengers.concat(floors, controllers, elevators);
-
-		for (var i = 0; i < entities.length; i++) {
+		for (i = 0; i < entities.length; i++) {
 			entities[i].update();
 		}
 
 		console.log('Updated all entities.');
 		console.log(entities);
+
+		return this;
 	};
 
 	// Get all pickups from the floors
 	Controller.prototype.gatherPickups = function () {
+		var i;
+
 		this.pickups.up = [];
 		this.pickups.down = [];
 		
-		for (var i = 0; i < this.floors.length; i++) {
+		for (i = 0; i < this.floors.length; i++) {
 			if (this.floors[i].isRequestingUp()) {
 				this.pickups.up.push(this.floors[i]);
 			}
@@ -104,6 +125,8 @@ define(['./elevator', './floor', './passenger', './entity'], function (Elevator,
 				this.pickups.down.push(this.floors[i]);
 			}
 		}
+
+		return this;
 	};	
 
 	// Sort the pickups by ascending floor order
@@ -115,6 +138,13 @@ define(['./elevator', './floor', './passenger', './entity'], function (Elevator,
 		this.pickups.down.sort(function (a, b) {
 			return a.id > b.id ? 1 : -1;
 		});
+
+		return this;
+	};
+
+	// Redraw game
+	Controller.prototype.drawGame = function () {
+
 	};
 
 	return Controller;

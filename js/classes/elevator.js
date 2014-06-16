@@ -61,11 +61,13 @@ define(['./entity'], function (Entity) {
 	// Set direction UP
 	Elevator.prototype.setDirectionUp = function () {
 		this.direction = this.UP;
+		return this;
 	};
 
 	// Set direction DOWN
 	Elevator.prototype.setDirectionDown = function () {
 		this.direction = this.DOWN;
+		return this;
 	};
 
 	// Reverse direction
@@ -75,6 +77,7 @@ define(['./entity'], function (Entity) {
 		} else if (this.direction === this.DOWN) {
 			this.direction = this.UP;
 		}
+		return this;
 	};
 
 	// Return destination floor
@@ -85,6 +88,7 @@ define(['./entity'], function (Entity) {
 	// Set the destination for this elevator
 	Elevator.prototype.setDestination = function (floor) {
 		this.destination = floor;
+		return this;
 	};
 
 	// Is there a destination set for this elevator?
@@ -153,7 +157,7 @@ define(['./entity'], function (Entity) {
 
 	// Are there passengers riding this elevator?
 	Elevator.prototype.hasPassengers = function () {
-		if (this.passengers.length > 0) {
+		if (this.passengers.length) {
 			return true;
 		} else {
 			return false;
@@ -163,6 +167,7 @@ define(['./entity'], function (Entity) {
 	// Clear the destination
 	Elevator.prototype.clearDestination = function () {
 		this.destination = null;
+		return this;
 	};
 
 	// Return the current floor
@@ -201,7 +206,7 @@ define(['./entity'], function (Entity) {
 
 	// Open doors and allow passengers in
 	Elevator.prototype.open = function () {
-		if (this.state != this.MOVING) {
+		if (this.state !== this.MOVING) {
 			this.state = this.OPEN;
 			return true;
 		} else {
@@ -252,6 +257,8 @@ define(['./entity'], function (Entity) {
 			return false;
 		}
 	};
+
+
 
 	return Elevator;
 });
