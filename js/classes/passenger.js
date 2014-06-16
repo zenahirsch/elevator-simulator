@@ -160,8 +160,13 @@ define(['./entity'], function (Entity) {
 	// Can this passenger enter the specified elevator?
 	Passenger.prototype.canEnter = function (elevator) {
 		if (elevator.isOpen()) {
-			// Add more checks for things like capacity and claustrophobia
-			return true;
+			console.log('elevator is open');
+			if (elevator.currentWeight + this.weight < elevator.capacity) {
+				console.log('not too heavy');
+				return true;
+			} else {
+				console.log('too heavy');
+			}
 		} else {
 			return false;
 		}
@@ -180,11 +185,13 @@ define(['./entity'], function (Entity) {
 			}
 		} 
 		this.ride(elevator);
+		this.elevator.currentWeight += this.weight;
 	};
 
 	// Exit elevator to the specified floor
 	Passenger.prototype.exit = function (floor) {
 		this.setFloor(floor.id);
+		this.elevator.currentWeight -= this.weight;
 		for (var i = 0; i < this.elevator.passengers.length; i++) {
 			if (this.elevator.passengers[i].id === this.id) {
 				this.elevator.passengers.splice(i, 1);

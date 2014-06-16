@@ -37,6 +37,9 @@ define(['./entity'], function (Entity) {
 	// The capacity of the elevator in pounds
 	Elevator.prototype.capacity = null;
 
+	// The weight currently in the elevator
+	Elevator.prototype.currentWeight = null;
+
 	// The passengers currently riding in this elevator
 	Elevator.prototype.passengers = null;
 
