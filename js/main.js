@@ -307,15 +307,12 @@ define(function (require) {
 
 // UPDATES
 
-	c.updateAll();
-	c.updateAll();
-	c.updateAll();
-	c.updateAll();
-	c.updateAll();
-	c.updateAll();
-	c.updateAll();
-	c.updateAll();
-	c.updateAll();
-	c.updateAll();
+	//c.updateAll();
+
+	document.getElementById('update-button').addEventListener('click', function () {
+		c.updateAll();
+		elements_context.clearRect(0, 0, 500, 600);
+		drawElements();
+	});
 
 });

@@ -3,14 +3,24 @@ define(['./entity'], function (Entity) {
 		this.id = params.id;
 		this.capacity = params.capacity;
 		this.speed = params.speed;
+		this.img_x = params.x;
+		this.img_y = params.y;
 
 		this.controller = controller;
 
+		this.currentWeight = 0;
 		this.passengers = [];
 	};
 
 	Elevator.prototype = new Entity();
 
+	/*
+	 * The X and Y position of the elevator
+	 */
+	Elevator.prototype.img_x = null;
+	Elevator.prototype.img_y = null;
+
+	// Elevator states
 	Elevator.prototype.STOP = 0;
 	Elevator.prototype.MOVING = 1;
 	Elevator.prototype.OPEN = 2;
@@ -172,12 +182,14 @@ define(['./entity'], function (Entity) {
 	// Set the floor of the elevator
 	Elevator.prototype.setFloor = function (floor_id) {
 		this.floor = this.controller.floors[floor_id];
+		return this;
 	};
 
 	// Move one floor in the elevator's direction
 	Elevator.prototype.move = function () {
 		this.state = this.MOVING;
 		this.floor = this.controller.floors[this.floor.id + this.direction];
+		this.img_y -= 200 * this.direction;
 		return true;
 	};
 

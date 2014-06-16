@@ -1,6 +1,9 @@
 define(['./entity'], function (Entity) {
 	var Floor = function (params, controller) {
 		this.id = params.id;
+		this.img_x = params.x;
+		this.img_y = params.y;
+		
 		this.controller = controller;
 
 		this.passengers = [];

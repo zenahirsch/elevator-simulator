@@ -1,0 +1,11 @@
+#game-background {
+	position: absolute;
+	z-index: 0;
+}
+
+#game-elements {
+	position: relative;
+	top: 0px;
+	left: 0px;
+	z-index: 100;
+}
