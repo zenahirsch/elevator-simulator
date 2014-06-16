@@ -6,9 +6,9 @@ define(function (require) {
 	
 	var initialize = function () {
 		var c = new Controller();
-		c.registerFloors(10, c);
-		c.registerElevators(4, c);
-		c.registerPassengers(20, c);
+		c.registerFloors(5, c);
+		c.registerElevators(2, c);
+		c.registerPassengers(5, c);
 		return c;
 	};
 
@@ -272,8 +272,7 @@ define(function (require) {
 				});
 				console.log('Elevator ' + this.id + ': the sorted destinations: ');
 				console.log(destinations);
-				console.log('Elevator ' + this.id + ': picking the first of the sorted destinations:');
-				console.log(destinations[0]);
+				console.log('Elevator ' + this.id + ': picking the first of the sorted destinations: Floor ' + destinations[0].id);
 				this.setDestination(destinations[0]);
 				console.log('Elevator ' + this.id + ': set destination to Floor ' + this.getDestination().id);
 			}
